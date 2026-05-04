@@ -1147,28 +1147,52 @@ function handleAnswer(selectedIndex) {
     const selectedBtn = document.getElementById(`opt-${selectedIndex}`);
     const correctBtn = document.getElementById(`opt-${question.answer}`);
 
-    if (isCorrect) {
-        state.score++;
-        selectedBtn.classList.add('correct-bg');
-        feedbackText.textContent = "回答正确！";
-        feedbackText.className = "font-bold text-lg mb-1 text-green-600";
-        correctAnswerText.textContent = "";
-    } else {
-        selectedBtn.classList.add('wrong-bg');
-        correctBtn.classList.add('correct-bg');
-        feedbackText.textContent = "回答错误";
-        feedbackText.className = "font-bold text-lg mb-1 text-red-600";
-        correctAnswerText.textContent = `正确答案：${question.options[question.answer]}`;
-    }
+    // 先将选中的选项变为蓝色
+    selectedBtn.classList.remove('bg-white', 'border-gray-200');
+    selectedBtn.classList.add('bg-blue-50', 'border-blue-500');
+    selectedBtn.querySelector('span:first-child').classList.remove('bg-gray-100', 'text-gray-600');
+    selectedBtn.querySelector('span:first-child').classList.add('bg-blue-500', 'text-white');
 
-    // Show feedback
-    feedbackArea.classList.remove('hidden');
+    // 延迟显示对错结果
+    setTimeout(() => {
+        if (isCorrect) {
+            state.score++;
+            // 正确：蓝色变为绿色
+            selectedBtn.classList.remove('bg-blue-50', 'border-blue-500');
+            selectedBtn.classList.add('bg-green-50', 'border-green-500');
+            selectedBtn.querySelector('span:first-child').classList.remove('bg-blue-500');
+            selectedBtn.querySelector('span:first-child').classList.add('bg-green-500');
+            
+            feedbackText.textContent = "回答正确！";
+            feedbackText.className = "font-bold text-lg mb-1 text-green-600";
+            correctAnswerText.textContent = "";
+        } else {
+            // 错误：蓝色变为红色
+            selectedBtn.classList.remove('bg-blue-50', 'border-blue-500');
+            selectedBtn.classList.add('bg-red-50', 'border-red-500');
+            selectedBtn.querySelector('span:first-child').classList.remove('bg-blue-500');
+            selectedBtn.querySelector('span:first-child').classList.add('bg-red-500');
+            
+            // 正确答案变为绿色
+            correctBtn.classList.remove('bg-white', 'border-gray-200');
+            correctBtn.classList.add('bg-green-50', 'border-green-500');
+            correctBtn.querySelector('span:first-child').classList.remove('bg-gray-100', 'text-gray-600');
+            correctBtn.querySelector('span:first-child').classList.add('bg-green-500', 'text-white');
+            
+            feedbackText.textContent = "回答错误";
+            feedbackText.className = "font-bold text-lg mb-1 text-red-600";
+            correctAnswerText.textContent = `正确答案：${question.options[question.answer]}`;
+        }
 
-    // Enable next button
-    nextBtn.disabled = false;
-    nextBtn.classList.remove('bg-gray-300', 'cursor-not-allowed');
-    nextBtn.classList.add('bg-blue-600', 'hover:bg-blue-700', 'shadow-lg', 'active:scale-95');
-    nextBtn.textContent = state.currentQuestionIndex === state.currentQuestions.length - 1 ? "查看成绩" : "下一题";
+        // Show feedback
+        feedbackArea.classList.remove('hidden');
+
+        // Enable next button
+        nextBtn.disabled = false;
+        nextBtn.classList.remove('bg-gray-300', 'cursor-not-allowed');
+        nextBtn.classList.add('bg-blue-600', 'hover:bg-blue-700', 'shadow-lg', 'active:scale-95');
+        nextBtn.textContent = state.currentQuestionIndex === state.currentQuestions.length - 1 ? "查看成绩" : "下一题";
+    }, 300); // 300毫秒延迟
 }
 
 // Next Question
