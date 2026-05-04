@@ -877,13 +877,13 @@ function saveHistory() {
 // Save login state to localStorage (expires in 7 days)
 function saveLoginState() {
     if (!state.currentUser) return;
-    
+
     const loginData = {
         user: state.currentUser,
         timestamp: Date.now(),
         expiresAt: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days in milliseconds
     };
-    
+
     localStorage.setItem('quiz_login_state', JSON.stringify(loginData));
 }
 
@@ -891,16 +891,16 @@ function saveLoginState() {
 function loadLoginState() {
     const data = localStorage.getItem('quiz_login_state');
     if (!data) return null;
-    
+
     try {
         const loginData = JSON.parse(data);
-        
+
         // Check if expired
         if (Date.now() > loginData.expiresAt) {
             localStorage.removeItem('quiz_login_state');
             return null;
         }
-        
+
         return loginData.user;
     } catch (e) {
         return null;
@@ -987,7 +987,7 @@ function renderDashboard() {
                         <div class="font-medium text-gray-800 text-sm">${h.examName}</div>
                         <div class="text-xs text-gray-400">${formatDate(h.date)}</div>
                     </div>
-                    <div class="font-bold ${h.score >= 80 ? 'text-green-500' : (h.score >= 60 ? 'text-blue-500' : 'text-red-500')}">
+                    <div class="font-bold ${h.score >= Math.ceil((h.total || 10) * 0.8) ? 'text-green-500' : (h.score >= Math.ceil((h.total || 10) * 0.6) ? 'text-blue-500' : 'text-red-500')}">
                         ${h.score}分
                     </div>
                 </div>
@@ -1180,6 +1180,7 @@ function nextQuestion() {
         renderResult();
     }
 }
+
 // End Quiz and return to dashboard
 function endQuiz() {
     renderResult();
@@ -1188,19 +1189,24 @@ function endQuiz() {
 // Render Result View
 function renderResult() {
     const total = state.currentQuestions.length;
-    const percentage = Math.round((state.score / total) * 100);
+    const score = state.score; // 直接使用答对题数作为分数
+    
+    // 动态计算及格线
+    const passLine = Math.ceil(total * 0.6);  // 60%及格线
+    const excellentLine = Math.ceil(total * 0.8);  // 80%优秀线
 
     // Save to history
     const record = {
         examName: state.currentExam.name,
-        score: percentage,
+        score: score,
+        total: total,  // 保存题目总数
         date: Date.now()
     };
     state.history.unshift(record); // Add to beginning
     saveHistory();
 
     // Trigger confetti if score is high
-    if (percentage >= 60) {
+    if (score >= passLine) {
         confetti({
             particleCount: 150,
             spread: 70,
@@ -1210,18 +1216,18 @@ function renderResult() {
 
     getApp().innerHTML = `
                 <div class="flex-1 flex flex-col items-center justify-center p-8 bg-white fade-in h-full">
-                    <div class="w-32 h-32 rounded-full flex items-center justify-center mb-6 shadow-inner ${percentage >= 80 ? 'bg-green-100' : (percentage >= 60 ? 'bg-blue-100' : 'bg-red-100')}">
-                        <span class="text-4xl font-bold ${percentage >= 80 ? 'text-green-600' : (percentage >= 60 ? 'text-blue-600' : 'text-red-600')}">
-                            ${percentage}
+                    <div class="w-32 h-32 rounded-full flex items-center justify-center mb-6 shadow-inner ${score >= excellentLine ? 'bg-green-100' : (score >= passLine ? 'bg-blue-100' : 'bg-red-100')}">
+                        <span class="text-4xl font-bold ${score >= excellentLine ? 'text-green-600' : (score >= passLine ? 'text-blue-600' : 'text-red-600')}">
+                            ${score}
                         </span>
                     </div>
                     
                     <h2 class="text-2xl font-bold text-gray-800 mb-2">
-                        ${percentage >= 80 ? '太棒了！' : (percentage >= 60 ? '考试通过' : '继续加油')}
+                        ${score >= excellentLine ? '太棒了！' : (score >= passLine ? '考试通过' : '继续加油')}
                     </h2>
                     <p class="text-gray-500 mb-8 text-center">
                         本次答题共 ${total} 题<br>
-                        答对 ${state.score} 题，答错 ${total - state.score} 题
+                        答对 ${score} 题，答错 ${total - score} 题
                     </p>
 
                     <div class="w-full space-y-4">
@@ -1235,9 +1241,7 @@ function renderResult() {
                 </div>
             `;
 }
-
-// Initialize App
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Try to auto-login from cache
     const cachedUser = loadLoginState();
     if (cachedUser) {
