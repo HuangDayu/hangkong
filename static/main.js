@@ -881,7 +881,7 @@ function saveLoginState() {
     const loginData = {
         user: state.currentUser,
         timestamp: Date.now(),
-        expiresAt: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days in milliseconds
+        expiresAt: Date.now() + (30 * 24 * 60 * 60 * 1000) // 30 days (1 month) in milliseconds
     };
 
     localStorage.setItem('quiz_login_state', JSON.stringify(loginData));
@@ -901,6 +901,9 @@ function loadLoginState() {
             return null;
         }
 
+        // Refresh login state (extend expiration time)
+        saveLoginState();
+
         return loginData.user;
     } catch (e) {
         return null;
@@ -911,7 +914,6 @@ function loadLoginState() {
 function clearLoginState() {
     localStorage.removeItem('quiz_login_state');
 }
-
 // Format date
 function formatDate(timestamp) {
     const date = new Date(timestamp);
