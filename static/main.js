@@ -1219,8 +1219,8 @@ function renderResult() {
     const score = state.score; // 直接使用答对题数作为分数
     
     // 动态计算及格线
-    const passLine = Math.ceil(total * 1.0);  // 60%及格线
-    const excellentLine = Math.ceil(total * 1.0);  // 80%优秀线
+    const passLine = Math.ceil(total * 0.6);  // 60%及格线
+    const excellentLine = Math.ceil(total * 0.8);  // 80%优秀线
 
     // Save to history
     const record = {
@@ -1250,7 +1250,7 @@ function renderResult() {
                     </div>
                     
                     <h2 class="text-2xl font-bold text-gray-800 mb-2">
-                        ${score >= excellentLine ? '考试通过' : '继续加油'}
+                        ${score >= total ? '考试通过' : '继续加油'}
                     </h2>
                     <p class="text-gray-500 mb-8 text-center">
                         本次答题共 ${total} 题<br>
