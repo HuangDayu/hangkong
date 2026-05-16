@@ -827,7 +827,8 @@ const state = {
     currentQuestions: [],
     currentQuestionIndex: 0,
     score: 0,
-    history: []
+    history: [],
+    currentQuestionAnswered: false // 标记当前题目是否已作答
 };
 
 // Get app element dynamically to ensure DOM is ready
@@ -1071,6 +1072,9 @@ function startExam(examId) {
 
 // Render Quiz View
 function renderQuiz() {
+    // 重置当前题目的作答状态
+    state.currentQuestionAnswered = false;
+    
     const question = state.currentQuestions[state.currentQuestionIndex];
     const progress = ((state.currentQuestionIndex) / state.currentQuestions.length) * 100;
 
@@ -1132,6 +1136,13 @@ function renderQuiz() {
 
 // Handle Answer Selection
 function handleAnswer(selectedIndex) {
+    // 防止重复提交：如果当前题目已作答，直接忽略
+    if (state.currentQuestionAnswered) {
+        return;
+    }
+    // 标记当前题目已作答
+    state.currentQuestionAnswered = true;
+
     const question = state.currentQuestions[state.currentQuestionIndex];
     const isCorrect = selectedIndex === question.answer;
     const buttons = document.querySelectorAll('.option-btn');
